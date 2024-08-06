@@ -271,8 +271,12 @@ extraAttributes:
 ################################################################################
 
 ################################################################################
-# OpenTelemetry collector running as an daemonset agent on every node.
-# It collects metrics and traces and send them to Signalfx backend.
+# OpenTelemetry Collector DaemonSet Agent Deployment
+# - Runs as a DaemonSet agent on every node.
+# - Collects logs, metrics, and traces from each node in the cluster.
+# - Exports data to the Splunk Observability/Platform backend.
+# - Telemetry data collected by the agents is routed through the gateway when
+#   gateway.enabled = true.
 ################################################################################
 
 agent:
@@ -448,13 +452,13 @@ agent:
       receivers: {}
 
 ################################################################################
-# OpenTelemetry Kubernetes cluster receiver
-# This is an extra 1-replica deployment of OpenTelemetry collector used
-# specifically for collecting metrics from kubernetes API.
+# OpenTelemetry Kubernetes Cluster Receiver
+# - 1-replica deployment of the OpenTelemetry Collector.
+# - Collects single-source or cluster-level metrics and logs.
+# - Exports data to the Splunk Observability/Platform backend.
+# - Telemetry data collected by the cluster receiver does not pass through the
+#   gateway, even when gateway.enabled = true.
 ################################################################################
-
-# Cluster receiver collects cluster level metrics from the Kubernetes API.
-# It has to be running on one pod, so it uses its own dedicated deployment with 1 replica.
 
 clusterReceiver:
   enabled: true
@@ -1048,12 +1052,14 @@ securityContextConstraints:
 securityContextConstraintsOverwrite: {}
 
 ################################################################################
-# OpenTelemetry "collector" k8s deployment configuration.
-# This is an additional deployment of OpenTelemetry collector that can be used
-# to pass traces trough it, make k8s metadata enrichment and batching.
-# Another use case is to point tracing instrumentation libraries directly to
-# the collector endpoint instead of local agents. The collector running in the
-# passthrough mode is recommended for large k8s clusters, disabled by default.
+# OpenTelemetry Collector Kubernetes Gateway Deployment
+# - X-replica deployment of the OpenTelemetry Collector.
+# - Forwards or processes metrics, logs, and traces.
+# - Handles Kubernetes metadata enrichment and batching.
+# - Tracing instrumentation libraries can point directly to the gateway collector
+#   service endpoint instead of local agents.
+# - Recommended for large Kubernetes clusters for performance optimization.
+# - Disabled by default.
 ################################################################################
 
 gateway:
@@ -1139,12 +1145,8 @@ gateway:
   # existing fields can be disabled by setting them to `null`.
   config: {}
 
-################################################################################
-# OpenTelemetry service config, used for otel collector deployment.
-# Disabled by default
-################################################################################
-
-# opentelemetry collector service created only if collector.enabled = true
+# Kubernetes service configuration for the gateway deployment.
+# Enabled if gateway.enabled=true, otherwise disabled.
 service:
   # Service type
   type: ClusterIP
